@@ -35,9 +35,7 @@ If you've ever fed a codebase to an LLM, you know the drill: open ten files, cop
 - **Fast, native, and lightweight** — built with Tauri, so it's a tiny binary with a real filesystem, not an Electron app
 
 ## 📸 Screenshots
-![alt text](<Screenshot 2026-07-03 at 2.12.14 AM.png>) ![alt text](<Screenshot 2026-07-03 at 2.12.20 AM.png>) ![alt text](<Screenshot 2026-07-03 at 2.12.23 AM.png>)
-
-> _Add a screenshot or GIF here of the drag-and-drop screen, the file tree with tier toggles, and the generated Markdown output._
+![alt text](<https://ik.imagekit.io/fecjge5sq/ss01.jpg>) ![alt text](<https://ik.imagekit.io/fecjge5sq/ss02.jpg>) ![alt text](<https://ik.imagekit.io/fecjge5sq/ss03.jpg>)
 
 ## 📥 Installation
 
