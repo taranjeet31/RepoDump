@@ -4,9 +4,6 @@
 
 ### Turn any codebase into one clean, LLM-ready Markdown file — in one drop.
 
-[![Release](https://img.shields.io/github/release/taranjeet31/RepoDump?style=flat-square)](https://github.com/taranjeet31/RepoDump/releases)
-
-https://github.com/taranjeet31/RepoDump/releases
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](./LICENSE)
 [![Built with Tauri](https://img.shields.io/badge/Built%20with-Tauri-24C8DB?style=flat-square&logo=tauri)](https://tauri.app)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-informational?style=flat-square)](#-installation)
