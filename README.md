@@ -18,8 +18,9 @@
 
 If you've ever fed a codebase to an LLM, you know the drill: open ten files, copy, paste, re-paste when you miss one, and hope you didn't just blow your context window on `package-lock.json`.
 
-**RepoDump kills that workflow.** Drag a folder in, pick the files that matter, and get back a single, clean Markdown file — complete with a folder tree, a table of contents, and a live token counter — ready to paste straight into Claude, ChatGPT, or any LLM. Direct download link for MacOS:[MacOS](https://github.com/USERNAME/REPOSITORY/releases/latest)
-Direct download link for Windows:[Win](https://github.com/taranjeet31/RepoDump/releases/download/v1.0.0/RepoDump_0.1.0_x64-setup.exe)
+**RepoDump kills that workflow.** Drag a folder in, pick the files that matter, and get back a single, clean Markdown file — complete with a folder tree, a table of contents, and a live token counter — ready to paste straight into Claude, ChatGPT, or any LLM. Direct download link for MacOS : [MacOS](https://github.com/taranjeet31/RepoDump/releases/download/v1.0.0/RepoDump_0.1.0_aarch64.dmg) 
+
+Direct download link for Windows : [Win](https://github.com/taranjeet31/RepoDump/releases/download/v1.0.0/RepoDump_0.1.0_x64-setup.exe)
 
 ## ✨ Features
 
