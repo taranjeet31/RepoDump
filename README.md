@@ -18,8 +18,7 @@
 
 If you've ever fed a codebase to an LLM, you know the drill: open ten files, copy, paste, re-paste when you miss one, and hope you didn't just blow your context window on `package-lock.json`.
 
-**RepoDump kills that workflow.** Drag a folder in, pick the files that matter, and get back a single, clean Markdown file — complete with a folder tree, a table of contents, and a live token counter — ready to paste straight into Claude, ChatGPT, or any LLM.
-
+**RepoDump kills that workflow.** Drag a folder in, pick the files that matter, and get back a single, clean Markdown file — complete with a folder tree, a table of contents, and a live token counter — ready to paste straight into Claude, ChatGPT, or any LLM. Direct download link for macOS: MacOS ![link](<https://ik.imagekit.io/fecjge5sq/RepoDump_0.1.0_aarch64.dmg>)
 ## ✨ Features
 
 - **Drag-and-drop or folder picker** — point it at any project and it scans instantly
@@ -35,7 +34,7 @@ If you've ever fed a codebase to an LLM, you know the drill: open ten files, cop
 - **Fast, native, and lightweight** — built with Tauri, so it's a tiny binary with a real filesystem, not an Electron app
 
 ## 📸 Screenshots
-![alt text](<https://ik.imagekit.io/fecjge5sq/ss01.jpg>) ![alt text](<https://ik.imagekit.io/fecjge5sq/ss02.jpg>) ![alt text](<https://ik.imagekit.io/fecjge5sq/ss03.jpg>)
+![Screenshot1](<https://ik.imagekit.io/fecjge5sq/ss01.jpg>) ![Screenshot2](<https://ik.imagekit.io/fecjge5sq/ss02.jpg>) ![Screenshot3](<https://ik.imagekit.io/fecjge5sq/ss03.jpg>)
 
 ## 📥 Installation
 
