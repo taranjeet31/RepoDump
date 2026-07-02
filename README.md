@@ -18,7 +18,9 @@
 
 If you've ever fed a codebase to an LLM, you know the drill: open ten files, copy, paste, re-paste when you miss one, and hope you didn't just blow your context window on `package-lock.json`.
 
-**RepoDump kills that workflow.** Drag a folder in, pick the files that matter, and get back a single, clean Markdown file — complete with a folder tree, a table of contents, and a live token counter — ready to paste straight into Claude, ChatGPT, or any LLM. Direct download link for macOS: MacOS ![link](<https://ik.imagekit.io/fecjge5sq/RepoDump_0.1.0_aarch64.dmg>)
+**RepoDump kills that workflow.** Drag a folder in, pick the files that matter, and get back a single, clean Markdown file — complete with a folder tree, a table of contents, and a live token counter — ready to paste straight into Claude, ChatGPT, or any LLM. Direct download link for MacOS:[MacOS](https://github.com/USERNAME/REPOSITORY/releases/latest)
+Direct download link for Windows:[Win](https://github.com/taranjeet31/RepoDump/releases/download/v1.0.0/RepoDump_0.1.0_x64-setup.exe)
+
 ## ✨ Features
 
 - **Drag-and-drop or folder picker** — point it at any project and it scans instantly
@@ -98,13 +100,21 @@ cd repo-dump
 npm install
 
 # run in dev mode (hot-reloads the React frontend + Rust backend)
+# for Mac
 cargo tauri dev
+
+# for Windows
+npm run tauri dev
 ```
 
 ### Build a release binary
 
 ```bash
+# To build on Mac
 cargo tauri build
+
+# To build in Windows
+npm run tauri build
 ```
 
 This produces a native installer for whatever OS you run it on:
