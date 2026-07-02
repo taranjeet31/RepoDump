@@ -8,110 +8,74 @@ interface TogglesProps {
 
 export function Toggles({ toggles, onChange }: TogglesProps) {
   return (
-    <div className="flex flex-col gap-2 px-3 py-3 border-b border-zinc-800">
-      <p className="text-[10px] font-semibold uppercase tracking-widest text-zinc-600 mb-0.5">
+    <div className="px-3 py-3.5 border-b border-white/[0.06]">
+      <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-zinc-700 mb-3">
         Global Filters
       </p>
-
-      {/* Tier 2 — Token Heavy */}
-      <ToggleRow
-        icon={<Package size={13} className="text-amber-400" />}
-        label="Dependency Manifests"
-        description="package.json, Cargo.toml, yarn.lock, go.mod…"
-        badgeLabel="Token Heavy"
-        badgeClass="text-amber-400 bg-amber-400/10"
-        checked={toggles.includeTokenHeavy}
-        onChange={(v) => onChange({ ...toggles, includeTokenHeavy: v })}
-      />
-
-      {/* Tier 3 — Danger Zone */}
-      <ToggleRow
-        icon={<ShieldAlert size={13} className="text-red-400" />}
-        label="Danger Zone Files"
-        description=".env, .csv, .log, .patch, .ipynb — use with caution"
-        badgeLabel="Danger Zone"
-        badgeClass="text-red-400 bg-red-400/10"
-        checked={toggles.includeDangerZone}
-        onChange={(v) => onChange({ ...toggles, includeDangerZone: v })}
-        warning={
-          toggles.includeDangerZone
-            ? "These files may contain secrets or massive payloads"
-            : undefined
-        }
-      />
+      <div className="flex flex-col gap-3">
+        <ToggleRow
+          icon={<Package size={12} className="text-amber-500" />}
+          label="Manifests"
+          description="package.json, Cargo.toml, lock files…"
+          dotColor="bg-amber-500"
+          checked={toggles.includeTokenHeavy}
+          onChange={(v) => onChange({ ...toggles, includeTokenHeavy: v })}
+        />
+        <ToggleRow
+          icon={<ShieldAlert size={12} className="text-red-500" />}
+          label="Danger Zone"
+          description=".env, .csv, .log, .ipynb"
+          dotColor="bg-red-500"
+          checked={toggles.includeDangerZone}
+          onChange={(v) => onChange({ ...toggles, includeDangerZone: v })}
+          warning={toggles.includeDangerZone ? "May expose secrets or flood context" : undefined}
+        />
+      </div>
     </div>
   );
 }
-
-// ---------------------------------------------------------------------------
-// Single toggle row
-// ---------------------------------------------------------------------------
 
 interface ToggleRowProps {
   icon: React.ReactNode;
   label: string;
   description: string;
-  badgeLabel: string;
-  badgeClass: string;
+  dotColor: string;
   checked: boolean;
   onChange: (v: boolean) => void;
   warning?: string;
 }
 
-function ToggleRow({
-  icon,
-  label,
-  description,
-  badgeLabel,
-  badgeClass,
-  checked,
-  onChange,
-  warning,
-}: ToggleRowProps) {
+function ToggleRow({ icon, label, description, checked, onChange, warning }: ToggleRowProps) {
   return (
-    <div className="flex flex-col gap-1">
-      <label className="flex items-center justify-between gap-3 cursor-pointer group">
+    <div className="flex flex-col gap-1.5">
+      <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
-          <span className="flex-shrink-0">{icon}</span>
+          <span className="flex-shrink-0 opacity-80">{icon}</span>
           <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-medium text-zinc-300 group-hover:text-zinc-100 transition-colors">
-                {label}
-              </span>
-              <span
-                className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${badgeClass} flex-shrink-0`}
-              >
-                {badgeLabel}
-              </span>
-            </div>
-            <p className="text-[11px] text-zinc-600 truncate">{description}</p>
+            <p className="text-[12px] font-medium text-zinc-300 leading-none mb-0.5">{label}</p>
+            <p className="text-[10px] text-zinc-700 truncate">{description}</p>
           </div>
         </div>
-
-        {/* Toggle switch */}
+        {/* Toggle pill */}
         <button
           type="button"
           role="switch"
           aria-checked={checked}
           onClick={() => onChange(!checked)}
           className={[
-            "flex-shrink-0 relative w-9 h-5 rounded-full transition-colors duration-200",
-            "focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500",
-            checked ? "bg-violet-600" : "bg-zinc-700",
+            "flex-shrink-0 relative w-8 h-4 rounded-full transition-colors duration-200",
+            "focus:outline-none focus-visible:ring-1 focus-visible:ring-violet-500",
+            checked ? "bg-violet-600" : "bg-zinc-800 border border-zinc-700",
           ].join(" ")}
         >
-          <span
-            className={[
-              "absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow-sm",
-              "transition-transform duration-200",
-              checked ? "translate-x-4" : "translate-x-0",
-            ].join(" ")}
-          />
+          <span className={[
+            "absolute top-0.5 w-3 h-3 rounded-full shadow-sm transition-all duration-200",
+            checked ? "left-[18px] bg-white" : "left-0.5 bg-zinc-500",
+          ].join(" ")} />
         </button>
-      </label>
-
+      </div>
       {warning && (
-        <p className="text-[11px] text-red-400/80 bg-red-400/5 border border-red-400/15 rounded px-2 py-1 ml-5">
+        <p className="text-[10px] text-red-400/70 bg-red-500/8 border border-red-500/15 rounded px-2 py-1 ml-5 leading-snug">
           ⚠ {warning}
         </p>
       )}

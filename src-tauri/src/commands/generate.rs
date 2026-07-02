@@ -1,6 +1,7 @@
 use std::path::Path;
 
 use crate::filters::ext_to_language;
+use crate::commands::scan::FileNode;
 
 // ---------------------------------------------------------------------------
 // Request type — sent from the frontend
@@ -13,6 +14,8 @@ pub struct GenerateRequest {
     pub file_paths: Vec<String>,
     /// Display name for the root (e.g. the folder name)
     pub root_name: String,
+    /// Full scanned tree for the folder/file structure section
+    pub tree: FileNode,
 }
 
 // ---------------------------------------------------------------------------
@@ -49,6 +52,14 @@ pub fn generate_markdown(request: GenerateRequest) -> Result<GenerateResponse, S
         "**Files:** {}  \n\n",
         request.file_paths.len()
     ));
+
+    output.push_str("## Folder Structure\n\n");
+    output.push_str("```text\n");
+    output.push_str(&render_tree(&request.tree));
+    if !output.ends_with('\n') {
+        output.push('\n');
+    }
+    output.push_str("```\n\n");
 
     // Table of contents — quick overview before the content
     if !request.file_paths.is_empty() {
@@ -235,5 +246,30 @@ fn format_bytes(bytes: usize) -> String {
         format!("{:.1} KB", bytes as f64 / 1024.0)
     } else {
         format!("{:.1} MB", bytes as f64 / (1024.0 * 1024.0))
+    }
+}
+
+fn render_tree(root: &FileNode) -> String {
+    let mut lines = vec![".".to_string()];
+    render_tree_children(&root.children, "", &mut lines);
+    lines.join("\n")
+}
+
+fn render_tree_children(children: &[FileNode], prefix: &str, lines: &mut Vec<String>) {
+    let visible_children: Vec<&FileNode> = children
+        .iter()
+        .filter(|child| child.structure_checked)
+        .collect();
+
+    for (index, child) in visible_children.iter().enumerate() {
+
+        let is_last = index + 1 == visible_children.len();
+        let branch = if is_last { "└── " } else { "├── " };
+        lines.push(format!("{prefix}{branch}{}", child.name));
+
+        if child.is_dir && !child.children.is_empty() {
+            let next_prefix = format!("{prefix}{}", if is_last { "    " } else { "│   " });
+            render_tree_children(&child.children, &next_prefix, lines);
+        }
     }
 }

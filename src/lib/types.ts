@@ -12,6 +12,7 @@ export interface FileNode {
   isDir: boolean;
   tier: Tier | null;
   checked: boolean;
+  structureChecked: boolean;
   children: FileNode[];
   sizeBytes: number | null;
   depth: number;
@@ -20,6 +21,7 @@ export interface FileNode {
 export interface GenerateRequest {
   filePaths: string[];
   rootName: string;
+  tree: FileNode;
 }
 
 export interface GenerateResponse {
@@ -72,6 +74,12 @@ export function countChecked(node: FileNode): number {
   return node.children.reduce((acc, c) => acc + countChecked(c), 0);
 }
 
+/** Count selected nodes for the structure tree */
+export function countStructureChecked(node: FileNode): number {
+  if (!node.isDir) return node.structureChecked ? 1 : 0;
+  return node.children.reduce((acc, c) => acc + countStructureChecked(c), 0);
+}
+
 /** Count total visible files (non-blacklisted) */
 export function countTotal(node: FileNode): number {
   if (!node.isDir) return 1;
@@ -96,21 +104,45 @@ export function applyTierToggle(
 
 /** Toggle a single node (and propagate downward for dirs) */
 export function toggleNode(node: FileNode, targetId: string, checked: boolean): FileNode {
+  return toggleNodeByKey(node, targetId, checked, "checked");
+}
+
+/** Toggle a single node for the structure tree (and propagate downward for dirs) */
+export function toggleStructureNode(node: FileNode, targetId: string, checked: boolean): FileNode {
+  return toggleNodeByKey(node, targetId, checked, "structureChecked");
+}
+
+/** Mirror the export selection into the structure outline selection. */
+export function syncStructureSelection(node: FileNode): FileNode {
+  return {
+    ...node,
+    structureChecked: node.checked,
+    children: node.children.map(syncStructureSelection),
+  };
+}
+
+type SelectionKey = "checked" | "structureChecked";
+
+function toggleNodeByKey(node: FileNode, targetId: string, checked: boolean, key: SelectionKey): FileNode {
   if (node.id === targetId) {
-    return setAllChecked(node, checked);
+    return setAllCheckedByKey(node, checked, key);
   }
   if (!node.isDir) return node;
   return {
     ...node,
-    children: node.children.map((c) => toggleNode(c, targetId, checked)),
+    children: node.children.map((c) => toggleNodeByKey(c, targetId, checked, key)),
   };
 }
 
 function setAllChecked(node: FileNode, checked: boolean): FileNode {
+  return setAllCheckedByKey(node, checked, "checked");
+}
+
+function setAllCheckedByKey(node: FileNode, checked: boolean, key: SelectionKey): FileNode {
   return {
     ...node,
-    checked,
-    children: node.children.map((c) => setAllChecked(c, checked)),
+    [key]: checked,
+    children: node.children.map((c) => setAllCheckedByKey(c, checked, key)),
   };
 }
 

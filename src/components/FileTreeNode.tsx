@@ -1,135 +1,109 @@
 import { useState } from "react";
-import {
-  ChevronRight,
-  ChevronDown,
-  File,
-  Folder,
-  FolderOpen,
-  AlertTriangle,
-} from "lucide-react";
+import { ChevronRight, ChevronDown, FileCode, Folder, FolderOpen, AlertTriangle } from "lucide-react";
 import type { FileNode, GlobalToggles } from "../lib/types";
-import { TIER_META, formatBytes } from "../lib/types";
+import { formatBytes } from "../lib/types";
 
 interface FileTreeNodeProps {
   node: FileNode;
   toggles: GlobalToggles;
   onToggle: (id: string, checked: boolean) => void;
-  onDangerConfirm: (id: string, checked: boolean) => void;
+  onDangerConfirm?: (id: string, checked: boolean) => void;
+  selectionKey: "checked" | "structureChecked";
+  mode: "content" | "structure";
+  locked?: boolean;
   depth?: number;
 }
 
-export function FileTreeNode({
-  node,
-  toggles,
-  onToggle,
-  onDangerConfirm,
-  depth = 0,
-}: FileTreeNodeProps) {
-  const [expanded, setExpanded] = useState(depth < 2); // auto-expand first two levels
+export function FileTreeNode({ node, toggles, onToggle, onDangerConfirm, selectionKey, mode, locked = false, depth = 0 }: FileTreeNodeProps) {
+  const [expanded, setExpanded] = useState(depth < 2);
 
-  const isDisabled = (() => {
-    if (!node.isDir && node.tier === "TokenHeavy" && !toggles.includeTokenHeavy)
-      return true;
-    if (!node.isDir && node.tier === "DangerZone" && !toggles.includeDangerZone)
-      return true;
-    return false;
-  })();
+  const selected = node[selectionKey];
+  const isDisabled = locked || (mode === "content" && !node.isDir && (
+    (node.tier === "TokenHeavy" && !toggles.includeTokenHeavy) ||
+    (node.tier === "DangerZone" && !toggles.includeDangerZone)
+  ));
 
   const handleCheckChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.stopPropagation();
     const checked = e.target.checked;
-
-    if (node.tier === "DangerZone" && checked) {
-      onDangerConfirm(node.id, checked);
-      return;
-    }
-
+    if (mode === "content" && node.tier === "DangerZone" && checked) { onDangerConfirm?.(node.id, checked); return; }
     onToggle(node.id, checked);
   };
 
-  // Determine the indeterminate state for directory checkboxes
-  const dirCheckedState = (() => {
+  const dirState = (() => {
     if (!node.isDir) return null;
-    const counts = countDescendants(node);
-    if (counts.checked === 0) return "none";
-    if (counts.checked === counts.total) return "all";
+    const c = countDescendants(node, selectionKey);
+    if (c.checked === 0) return "none";
+    if (c.checked === c.total) return "all";
     return "some";
   })();
+
+  const indent = depth * 16 + 12;
 
   return (
     <div>
       <div
         className={[
-          "group flex items-center gap-1.5 px-2 py-[3px] rounded-md",
-          "cursor-default select-none transition-colors duration-100",
-          "hover:bg-zinc-800/60",
-          isDisabled ? "opacity-40 pointer-events-none" : "",
+          "group flex items-center gap-1.5 py-[3px] pr-3 rounded select-none",
+          "transition-colors duration-75 cursor-default",
+          "hover:bg-white/[0.04]",
+          isDisabled ? "opacity-35 pointer-events-none" : "",
         ].join(" ")}
-        style={{ paddingLeft: `${depth * 14 + 8}px` }}
+        style={{ paddingLeft: `${indent}px` }}
       >
-        {/* Expand/collapse for directories */}
+        {/* Chevron for dirs */}
         {node.isDir ? (
           <button
             onClick={() => setExpanded((v) => !v)}
-            className="flex-shrink-0 text-zinc-500 hover:text-zinc-300 transition-colors w-4 h-4"
+            className="flex-shrink-0 w-3.5 h-3.5 text-zinc-700 hover:text-zinc-400 transition-colors"
           >
-            {expanded ? (
-              <ChevronDown size={13} />
-            ) : (
-              <ChevronRight size={13} />
-            )}
+            {expanded ? <ChevronDown size={11} strokeWidth={2.5} /> : <ChevronRight size={11} strokeWidth={2.5} />}
           </button>
         ) : (
-          <span className="w-4 flex-shrink-0" />
+          <span className="w-3.5 flex-shrink-0" />
         )}
 
         {/* Checkbox */}
         <Checkbox
-          checked={
-            node.isDir
-              ? dirCheckedState === "all"
-              : node.checked
-          }
-          indeterminate={dirCheckedState === "some"}
+          checked={node.isDir ? dirState === "all" : selected}
+          indeterminate={dirState === "some"}
           disabled={isDisabled}
           onChange={handleCheckChange}
         />
 
         {/* Icon */}
-        <span className="flex-shrink-0 text-zinc-500">
-          {node.isDir ? (
-            expanded ? (
-              <FolderOpen size={14} className="text-violet-400/70" />
-            ) : (
-              <Folder size={14} className="text-violet-400/70" />
-            )
-          ) : (
-            <File size={13} className="text-zinc-600" />
-          )}
+        <span className="flex-shrink-0">
+          {node.isDir
+            ? expanded
+              ? <FolderOpen size={13} className="text-violet-500/70" />
+              : <Folder size={13} className="text-violet-500/50" />
+            : <FileCode size={12} className="text-zinc-700 group-hover:text-zinc-600 transition-colors" />
+          }
         </span>
 
         {/* Name */}
         <span
           onClick={() => node.isDir && setExpanded((v) => !v)}
           className={[
-            "flex-1 text-[13px] font-mono truncate",
+            "flex-1 text-[12.5px] font-mono truncate leading-none",
             node.isDir
-              ? "text-zinc-200 font-medium cursor-pointer"
-              : "text-zinc-400",
-            node.checked && !node.isDir ? "text-zinc-200" : "",
+              ? "text-zinc-300 font-medium cursor-pointer"
+              : selected
+                ? "text-zinc-300"
+                : "text-zinc-500",
           ].join(" ")}
         >
           {node.name}
         </span>
 
-        {/* Tier badge (files only) */}
-        {!node.isDir && node.tier && (
-          <TierBadge tier={node.tier} />
+        {/* Danger badge */}
+        {!node.isDir && node.tier === "DangerZone" && (
+          <AlertTriangle size={10} className="flex-shrink-0 text-red-500/60" />
         )}
 
-        {/* File size */}
+        {/* File size — only on hover for cleanliness */}
         {!node.isDir && node.sizeBytes !== null && (
-          <span className="text-[11px] text-zinc-700 font-mono group-hover:text-zinc-500 transition-colors flex-shrink-0">
+          <span className="text-[10px] text-zinc-800 font-mono group-hover:text-zinc-600 transition-colors flex-shrink-0 tabular-nums">
             {formatBytes(node.sizeBytes)}
           </span>
         )}
@@ -145,64 +119,36 @@ export function FileTreeNode({
               toggles={toggles}
               onToggle={onToggle}
               onDangerConfirm={onDangerConfirm}
+              selectionKey={selectionKey}
+              mode={mode}
+              locked={locked}
               depth={depth + 1}
             />
           ))}
         </div>
       )}
 
-      {/* Empty dir message */}
       {node.isDir && expanded && node.children.length === 0 && (
         <div
-          className="text-[11px] text-zinc-700 italic py-0.5"
-          style={{ paddingLeft: `${(depth + 1) * 14 + 8}px` }}
+          className="text-[10px] text-zinc-800 italic py-0.5"
+          style={{ paddingLeft: `${indent + 20}px` }}
         >
-          Empty or fully filtered
+          empty
         </div>
       )}
     </div>
   );
 }
 
-// ---------------------------------------------------------------------------
-// Tier badge
-// ---------------------------------------------------------------------------
+// ── Custom checkbox ───────────────────────────────────────────────────────
 
-function TierBadge({ tier }: { tier: NonNullable<FileNode["tier"]> }) {
-  const meta = TIER_META[tier];
-  if (tier === "CoreText") return null; // Don't clutter core files with a badge
-
-  return (
-    <span
-      className={[
-        "flex-shrink-0 text-[10px] font-medium px-1.5 py-0.5 rounded",
-        meta.color,
-        meta.bg,
-        "flex items-center gap-1",
-      ].join(" ")}
-    >
-      {tier === "DangerZone" && <AlertTriangle size={9} />}
-      {meta.label}
-    </span>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Custom checkbox (supports indeterminate state)
-// ---------------------------------------------------------------------------
-
-interface CheckboxProps {
-  checked: boolean;
-  indeterminate?: boolean;
-  disabled?: boolean;
+function Checkbox({ checked, indeterminate, disabled, onChange }: {
+  checked: boolean; indeterminate?: boolean; disabled?: boolean;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-}
-
-function Checkbox({ checked, indeterminate, disabled, onChange }: CheckboxProps) {
+}) {
   const ref = (el: HTMLInputElement | null) => {
     if (el) el.indeterminate = indeterminate ?? false;
   };
-
   return (
     <input
       ref={ref}
@@ -211,31 +157,22 @@ function Checkbox({ checked, indeterminate, disabled, onChange }: CheckboxProps)
       disabled={disabled}
       onChange={onChange}
       onClick={(e) => e.stopPropagation()}
-      className={[
-        "flex-shrink-0 w-3.5 h-3.5 rounded-sm cursor-pointer",
-        "accent-violet-500",
-        "border border-zinc-600",
-        disabled ? "cursor-not-allowed" : "",
-      ].join(" ")}
+      className="flex-shrink-0 w-3 h-3 rounded-[3px] cursor-pointer accent-violet-500"
     />
   );
 }
 
-// ---------------------------------------------------------------------------
-// Helper: count checked vs total file descendants
-// ---------------------------------------------------------------------------
+// ── Helpers ───────────────────────────────────────────────────────────────
 
-function countDescendants(node: FileNode): { checked: number; total: number } {
-  if (!node.isDir) {
-    return { checked: node.checked ? 1 : 0, total: 1 };
-  }
+function countDescendants(
+  node: FileNode,
+  selectionKey: "checked" | "structureChecked"
+): { checked: number; total: number } {
+  if (!node.isDir) return { checked: node[selectionKey] ? 1 : 0, total: 1 };
   return node.children.reduce(
     (acc, child) => {
-      const sub = countDescendants(child);
-      return {
-        checked: acc.checked + sub.checked,
-        total: acc.total + sub.total,
-      };
+      const sub = countDescendants(child, selectionKey);
+      return { checked: acc.checked + sub.checked, total: acc.total + sub.total };
     },
     { checked: 0, total: 0 }
   );

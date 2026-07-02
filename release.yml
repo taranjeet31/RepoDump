@@ -1,0 +1,102 @@
+name: "Release"
+
+# Triggers:
+#  - Push a tag like `v0.1.0` -> builds all platforms and attaches installers to a new GitHub Release.
+#  - Manual dispatch from the Actions tab, for testing the build matrix without cutting a release.
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+
+jobs:
+  release:
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: "macos-latest" # arm64 (M1/M2/M3)
+            args: "--target aarch64-apple-darwin"
+          - platform: "macos-latest" # x86_64 (Intel)
+            args: "--target x86_64-apple-darwin"
+          - platform: "ubuntu-22.04" # .deb + .AppImage
+            args: ""
+          - platform: "windows-latest" # .msi + .exe (NSIS)
+            args: ""
+
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # ---- Linux system deps: WebKitGTK, GTK, AppIndicator, AppImage tooling,
+      #      and libxdo-dev because this app uses tauri-plugin-clipboard-manager.
+      - name: Install Linux dependencies
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libappindicator3-dev \
+            librsvg2-dev \
+            patchelf \
+            libssl-dev \
+            libxdo-dev \
+            build-essential \
+            curl \
+            wget \
+            file
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          # Only macOS needs both Apple Silicon + Intel targets; other
+          # platforms build for their host target automatically.
+          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: "src-tauri -> target"
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: "npm" # switch to "yarn"/"pnpm" if that's what you use
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Build and release
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # --- Optional: macOS code signing + notarization ---
+          # Uncomment and add these as repo secrets once you have an
+          # Apple Developer certificate. Without them the build still
+          # succeeds, but users will see the Gatekeeper warning noted
+          # in the README (xattr -cr workaround).
+          # APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          # APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          # APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          # APPLE_ID: ${{ secrets.APPLE_ID }}
+          # APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          # APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          # --- Optional: Windows code signing ---
+          # TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          # TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: "RepoDump v__VERSION__"
+          releaseBody: |
+            See the assets below to download for your platform.
+
+            - **macOS (Apple Silicon):** `RepoDump_*_aarch64.dmg`
+            - **macOS (Intel):** `RepoDump_*_x64.dmg`
+            - **Windows:** `RepoDump_*_x64-setup.exe` or `.msi`
+            - **Linux:** `.AppImage` (portable) or `.deb` (Debian/Ubuntu)
+          releaseDraft: true
+          prerelease: false
+          args: ${{ matrix.args }}

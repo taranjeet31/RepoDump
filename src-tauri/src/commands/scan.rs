@@ -24,6 +24,8 @@ pub struct FileNode {
     pub tier: Option<Tier>,
     /// Whether this node is checked for export (default driven by tier)
     pub checked: bool,
+    /// Whether this node is included in the exported structure outline
+    pub structure_checked: bool,
     /// Children — empty vec for files, populated for directories
     pub children: Vec<FileNode>,
     /// File size in bytes (None for directories)
@@ -46,6 +48,7 @@ impl FileNode {
             is_dir: true,
             tier: None,
             checked: true, // dirs are always "checked" (folders expand, files inside drive export)
+            structure_checked: true,
             children: Vec::new(),
             size_bytes: None,
             depth,
@@ -66,6 +69,7 @@ impl FileNode {
             is_dir: false,
             tier: Some(tier),
             checked,
+            structure_checked: true,
             children: Vec::new(),
             size_bytes: Some(size_bytes),
             depth,
